@@ -25,7 +25,7 @@ local focus = { x = 0, y = 0, z = 0 }
 local start = 0
 
 local pixels = {{},{},{},{}}
-local patterns = {"fade", "chase", "random", 'ripple'}
+local patterns = {"test", "chase", "random", 'fade'}
 local selectedpattern = 1
 local arc_device
 
@@ -130,9 +130,9 @@ function allledson()
 	arc_device:all(15)
 end
 
-function allledsval(ring,value)
+function allledsval(ring, value)
     for y = 1, 64 do
-      pixels[ring][y]=value
+		pixels[ring][y]=value
     end
 end
 
@@ -229,13 +229,18 @@ function stopallpatterns()
    rippattern:stop()
 end
 
+function deltatoleds(n, delta)
+	brightness[n] = brightness[n] + delta 
+	ledval = util.clamp(brightness[n], 0, 15)
+	allledsval(n, ledval)
+end
 
 function arcfrompixels()
-  for x = 1, 4 do
-    for y = 1, 64 do
-      arc_device:led(x, y, pixels[x][y])
-    end
-  end 
+	for x = 1, 4 do
+		for y = 1, 64 do
+			arc_device:led(x, y, pixels[x][y])
+		end
+	end 
 end
 
 function arcredraw()
@@ -246,6 +251,11 @@ end
 function arc.delta(n, delta)
 	arcdelta[n]=delta
 	accum[n] = accum[n] + delta
+
+	if selectedpattern == 1 then
+		deltatoleds(n, delta)
+	end
+
 	redraw()
 --	arcDirty = true
 end
@@ -271,10 +281,7 @@ function enc(n, delta)
 	end
 	
 	if n==2 then
-		brightness[selectedring] = brightness[selectedring] + delta 
-		ledval = util.clamp(brightness[selectedring], 0, 15)
-		--  	print(ledval)
-		allledsval(selectedring,ledval)
+		deltatoleds(selectedring, delta)
 	end
   
 	-- redraw screen
@@ -373,7 +380,7 @@ function redraw()
 	screen.text_right(arcdelta[4])
 
 	screen.move(0, 60)
-	screen.text("Accum:")
+	screen.text("Accm:")
 
 	screen.move(36, 60)
 	screen.text_right(accum[1])
